@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Oval } from "react-loader-spinner";
+import { useState } from "react";
 
 const tempMovieData = [
   {
@@ -48,31 +47,12 @@ const tempWatchedData = [
   },
 ];
 
-const KEY = "98290365";
-
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
-  const [isloading, setIsLoading] = useState(false);
-  const query = "titanic";
-
-  useEffect(() => {
-    async function fetchMovies() {
-      setIsLoading(true);
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-      );
-      const data = await res.json();
-      console.log(data);
-      setMovies(data.Search);
-      setIsLoading(false);
-    }
-
-    fetchMovies();
-  }, []);
+  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
 
   return (
     <>
@@ -82,7 +62,9 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>{isloading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          <MovieList movies={movies} />
+        </Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
@@ -227,28 +209,5 @@ function WatchMovie({ movie }) {
         </p>
       </div>
     </li>
-  );
-}
-
-function Loader() {
-  return (
-    <div
-      className="loader"
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Oval
-        ariaLabel="loading-indicator"
-        height={100}
-        width={100}
-        strokeWidth={5}
-        strokeWidthSecondary={1}
-        color="#fff"
-        secondaryColor="transparent"
-      />
-    </div>
   );
 }
