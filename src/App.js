@@ -64,8 +64,6 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState(null);
 
-  const [rated, setRated] = useState(false);
-
   function handleSelectedMovie(id) {
     if (id === selectedId) handleCloseMovie();
     else setSelectedId(id);
@@ -77,12 +75,20 @@ export default function App() {
 
   function handleAddWatch(movie) {
     setWatched((watched) =>
-      watched.find((watchedMov) => watchedMov.imdbID === movie.imdbID)
+      watched.find(
+        (watchedMov) =>
+          watchedMov.imdbID === movie.imdbID &&
+          watchedMov.userRating === movie.userRating
+      )
         ? [...watched]
+        : watched.find(
+            (watchedMov) =>
+              watchedMov.imdbID === movie.imdbID &&
+              watchedMov.userRating !== movie.userRating
+          )
+        ? [...watched.filter((watchedMov) => watchedMov.id !== movie.id), movie]
         : [...watched, movie]
     );
-    setSelectedId(null);
-    setRated(false);
   }
 
   useEffect(() => {
@@ -137,8 +143,6 @@ export default function App() {
             <MovieDetails
               selectedId={selectedId}
               onCloseMovie={handleCloseMovie}
-              rated={rated}
-              setRated={setRated}
               onAddWatch={handleAddWatch}
             />
           ) : (
@@ -231,15 +235,10 @@ function Movie({ movie, handleSelectedMovie }) {
   );
 }
 
-function MovieDetails({
-  selectedId,
-  onCloseMovie,
-  rated,
-  setRated,
-  onAddWatch,
-}) {
+function MovieDetails({ selectedId, onCloseMovie, onAddWatch }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState(null);
 
   const {
     Title: title,
@@ -262,8 +261,10 @@ function MovieDetails({
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ")[0]),
+      userRating,
     };
     onAddWatch(newWatchedMovie);
+    onCloseMovie();
   }
 
   useEffect(() => {
@@ -304,8 +305,12 @@ function MovieDetails({
 
           <section>
             <div className="rating">
-              <StarRating maxRating={10} size={24} onSetRating={setRated} />
-              {rated && (
+              <StarRating
+                maxRating={10}
+                size={24}
+                onSetRating={setUserRating}
+              />
+              {userRating && (
                 <button className="btn-add" onClick={handleAdd}>
                   + Add to list
                 </button>
