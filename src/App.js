@@ -98,6 +98,8 @@ export default function App() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     async function fetchMovies() {
       try {
         query === "" && setMovies([]);
@@ -106,7 +108,8 @@ export default function App() {
 
         setIsLoading(true);
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          { signal }
         );
 
         if (!res.ok)
@@ -115,15 +118,19 @@ export default function App() {
         const data = await res.json();
         if (data.Response === "False") throw new Error(data.Error);
         setMovies(data.Search);
+        setError("");
       } catch (err) {
-        // console.error(err);
-        setError(err.message);
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchMovies();
+
+    return () => controller.abort();
   }, [query]);
 
   return (
@@ -150,6 +157,7 @@ export default function App() {
               selectedId={selectedId}
               onCloseMovie={handleCloseMovie}
               onAddWatch={handleAddWatch}
+              handleCloseMovie={handleCloseMovie}
             />
           ) : (
             <>
@@ -294,6 +302,20 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatch }) {
     document.title = `Movie | ${title}`;
     return () => (document.title = "Usepopcorn");
   }, [title]);
+
+  useEffect(() => {
+    function handleClosingKey(e) {
+      if (e.code === "Escape") {
+        onCloseMovie();
+      }
+    }
+
+    document.addEventListener("keydown", handleClosingKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleClosingKey);
+    };
+  }, [onCloseMovie]);
 
   return (
     <div className="details">
