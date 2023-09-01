@@ -150,7 +150,15 @@ function Logo() {
 function Search({ query, setQuery }) {
   const inputEl = useRef(null);
   useEffect(() => {
-    inputEl.current.focus();
+    function callback(e) {
+      if (e.key === "Enter" && document.activeElement !== inputEl.current) {
+        setQuery("");
+        inputEl.current.focus();
+      }
+    }
+    document.addEventListener("keydown", callback);
+
+    return () => document.removeEventListener("keydown", callback);
   }, []);
 
   // useEffect(() => {
