@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Oval } from "react-loader-spinner";
 import StarRating from "./StarRating";
 
@@ -148,6 +148,17 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+  useEffect(() => {
+    inputEl.current.focus();
+  }, []);
+
+  // useEffect(() => {
+  //   const el = document.querySelector(".search");
+  //   el.focus();
+  //   console.log(el);
+  // }, []);
+
   return (
     <input
       className="search"
@@ -155,6 +166,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
